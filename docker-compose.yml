@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: analytics_db
+    environment:
+      POSTGRES_DB: app_db
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend/api
+    container_name: analytics_backend
+    env_file:
+      - ./backend/api/.env.example
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+  analytics:
+    build: ./backend/analytics
+    container_name: analytics_streamlit
+    env_file:
+      - ./backend/analytics/.env.example
+    depends_on:
+      - backend
+    ports:
+      - "8501:8501"
+
+  frontend:
+    build: ./frontend
+    container_name: analytics_frontend
+    env_file:
+      - ./frontend/.env.example
+    depends_on:
+      - backend
+      - analytics
+    ports:
+      - "5173:5173"
+
+volumes:
+  db_data:
