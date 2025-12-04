@@ -22,7 +22,7 @@ export default function Navbar() {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <Sparkles className="w-5 h-5" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">InsightAI</span>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Insightiqo</span>
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
