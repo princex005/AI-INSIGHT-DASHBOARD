@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import ContactPage from "./pages/contact";
+import AboutPage from "./pages/about";
 
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -61,6 +63,8 @@ function App() {
 
           {/* ⭐ NEW ADMIN ROUTE */}
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/about" element={<AboutPage />} />
         </Routes>
 
         <Footer />
