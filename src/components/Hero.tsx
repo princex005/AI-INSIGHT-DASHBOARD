@@ -1,7 +1,36 @@
 import { useState, FormEvent } from 'react';
 import { ArrowRight, Play, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { trackEvent } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
+
+// 🔵 Universal event tracking function (simple + works with your table)
+async function logEvent({
+  eventType,
+  page,
+  eventDetail = '',
+  email = '',
+  metadata = {}
+}: {
+  eventType: string;
+  page: string;
+  eventDetail?: string;
+  email?: string;
+  metadata?: any;
+}) {
+  try {
+    await supabase.from("user_analytics").insert([
+      {
+        user_id: email || "guest",
+        page_visited: page,
+        event_type: eventType,
+        event_detail: eventDetail || JSON.stringify(metadata),
+        device: navigator.userAgent
+      }
+    ]);
+  } catch (err) {
+    console.warn("Analytics failed:", err);
+  }
+}
 
 export default function Hero() {
   const navigate = useNavigate();
@@ -11,30 +40,30 @@ export default function Hero() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // 🔵 Track “Start Free Trial” button click
   const handleStartTrialClick = () => {
     setShowTrialModal(true);
     setErrorMessage(null);
 
-    trackEvent({
-      eventType: 'trial_modal_open',
-      page: '/',
-    }).catch(() => {
-      // ignore analytics failures
+    logEvent({
+      eventType: "trial_modal_open",
+      page: "/",
+      eventDetail: "Hero Section"
     });
   };
 
+  // 🔵 Track “Watch Demo” button click
   const handleWatchDemoClick = () => {
     setShowDemoModal(true);
 
-    trackEvent({
-      eventType: 'demo_modal_open',
-      page: '/',
-      metadata: { source: 'hero' },
-    }).catch(() => {
-      // ignore analytics failures
+    logEvent({
+      eventType: "demo_modal_open",
+      page: "/",
+      metadata: { source: "hero" }
     });
   };
 
+  // 🔵 Track trial form submitted
   const handleTrialSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email.trim()) {
@@ -47,15 +76,13 @@ export default function Hero() {
 
     try {
       const cleanEmail = email.trim();
-      window.localStorage.setItem('insightai_trial_email', cleanEmail);
+      window.localStorage.setItem("insightai_trial_email", cleanEmail);
 
-      trackEvent({
+      logEvent({
         eventType: 'trial_started',
         page: '/',
         email: cleanEmail,
-        metadata: { source: 'hero' },
-      }).catch(() => {
-        // ignore analytics failures
+        metadata: { source: 'hero' }
       });
 
       setShowTrialModal(false);
@@ -92,7 +119,7 @@ export default function Hero() {
             </h1>
 
             <p className="text-xl text-slate-400 leading-relaxed max-w-xl">
-              Upload your dataset and get automatic dashboards, insights, and predictions powered by advanced AI.
+              Upload your datasets and get automatic dashboards, insights, and predictions powered by advanced AI.
             </p>
           </div>
 
@@ -134,9 +161,9 @@ export default function Hero() {
           </div>
         </div>
 
+        {/* Dashboard preview graphic */}
         <div className="relative hidden md:block">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl blur-3xl opacity-50" />
-
           <div className="relative backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 shadow-2xl">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -192,6 +219,7 @@ export default function Hero() {
         </div>
       </div>
 
+      {/* Trial Modal */}
       {showTrialModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="relative w-full max-w-md mx-4 rounded-2xl bg-slate-950 border border-white/10 p-6 shadow-2xl">
@@ -205,7 +233,7 @@ export default function Hero() {
 
             <h2 className="text-2xl font-semibold mb-2 text-white">Start your free trial</h2>
             <p className="text-sm text-slate-400 mb-4">
-              Enter your email and we&apos;ll send you a secure magic link to access your InsightAI trial.
+              Enter your email and we'll send you a secure magic link to access your InsightAI trial.
             </p>
 
             <form onSubmit={handleTrialSubmit} className="space-y-4">
@@ -244,6 +272,7 @@ export default function Hero() {
         </div>
       )}
 
+      {/* Demo Modal */}
       {showDemoModal && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="relative w-full max-w-4xl mx-4 rounded-2xl bg-slate-950 border border-white/10 p-4 shadow-2xl">
@@ -280,6 +309,7 @@ export default function Hero() {
           </div>
         </div>
       )}
+
     </section>
   );
 }
