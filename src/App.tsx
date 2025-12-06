@@ -12,6 +12,7 @@ import BlogDetail from './components/BlogDetail';
 import InsightStudio from './components/InsightStudio';
 import Analytics from './components/Analytics';
 import Footer from './components/Footer';
+import Insights from './components/Insights.tsx';
 
 // ⭐ NEW IMPORT: Admin Dashboard
 import AdminDashboard from "./admin/AdminDashboard";
@@ -65,6 +66,7 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/insights" element={<Insights/>} />
         </Routes>
 
         <Footer />

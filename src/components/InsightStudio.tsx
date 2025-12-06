@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Upload, Sparkles, BarChart3, FileText, ArrowLeft, AlertTriangle, Download, 
-  Filter, ArrowUpDown, ChevronDown, TrendingUp, DollarSign, Users, Clock, 
+import {
+  Upload, Sparkles, BarChart3, FileText, ArrowLeft, AlertTriangle, Download,
+  Filter, ArrowUpDown, ChevronDown, TrendingUp, DollarSign, Users, Clock,
   Zap, Activity, Award, File, BarChart2, PieChart, LineChart as LineChartIcon,
   Play, Pause, Maximize2, RefreshCw
 } from 'lucide-react';
@@ -102,15 +102,15 @@ function parseCsv(rawText: string): { headers: string[]; rows: Record<string, st
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
     if (!line.trim()) continue;
-    
+
     const parts = line.split(delimiter);
     const row: Record<string, string> = {};
-    
+
     headers.forEach((header, index) => {
       let value = (parts[index] ?? '').trim();
       // Basic quote handling
-      if ((value.startsWith('"') && value.endsWith('"')) || 
-          (value.startsWith("'") && value.endsWith("'"))) {
+      if ((value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))) {
         value = value.slice(1, -1);
       }
       row[header] = value;
@@ -137,7 +137,7 @@ function generateInsights(result: AnalysisResult): { insights: string[]; trends:
 
   if (topPerformer) {
     insights.push(`🏆 ${topPerformer.category} dominates with ${((topPerformer.share)).toFixed(1)}% market share (${topPerformer.value.toLocaleString()})`);
-    
+
     const underperformers = topCategories.slice(-2);
     if (underperformers.length > 0) {
       const last = underperformers[underperformers.length - 1];
@@ -147,7 +147,7 @@ function generateInsights(result: AnalysisResult): { insights: string[]; trends:
 
   const avg = benchmark.avg;
   const categoriesAboveAvg = chartData.filter(d => d.value > avg).length;
-  insights.push(`${categoriesAboveAvg} out of ${chartData.length} categories (${((categoriesAboveAvg/chartData.length)*100).toFixed(0)}%) exceed average performance`);
+  insights.push(`${categoriesAboveAvg} out of ${chartData.length} categories (${((categoriesAboveAvg / chartData.length) * 100).toFixed(0)}%) exceed average performance`);
 
   if (topCategories.length >= 3) {
     const growth = ((topCategories[0].value - topCategories[2].value) / topCategories[2].value * 100);
@@ -198,7 +198,7 @@ function analyzeData(headers: string[], rows: Record<string, string>[], prompt: 
   }
 
   const lowerPrompt = prompt.toLowerCase();
-  
+
   const chooseColumn = (candidates: string[], fallback: string, keywords: string[] = []): string => {
     if (candidates.length === 0) return fallback;
 
@@ -206,13 +206,13 @@ function analyzeData(headers: string[], rows: Record<string, string>[], prompt: 
     for (const col of candidates) {
       if (lowerPrompt.includes(col.toLowerCase())) return col;
     }
-    
+
     // Keyword match
     for (const col of candidates) {
       const tokens = col.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
       if (tokens.some(t => keywords.includes(t) || lowerPrompt.includes(t))) return col;
     }
-    
+
     return candidates[0];
   };
 
@@ -243,7 +243,7 @@ function analyzeData(headers: string[], rows: Record<string, string>[], prompt: 
     .sort((a, b) => b.value - a.value);
 
   const totalMetric = chartData.reduce((sum, p) => sum + p.value, 0);
-  
+
   if (totalMetric === 0) {
     throw new Error(`No valid numeric data in ${metricColumn}. Try a different metric in your prompt.`);
   }
@@ -320,7 +320,7 @@ export default function InsightStudio() {
 
   useEffect(() => {
     trackEvent({ eventType: 'page_view', page: '/insight-studio' });
-    
+
     let interval: NodeJS.Timeout;
     if (autoRefresh && result) {
       interval = setInterval(() => {
@@ -350,7 +350,7 @@ export default function InsightStudio() {
     const analysis = analyzeData(parseCsv(csvText).headers, parseCsv(csvText).rows, prompt);
     setResult(analysis);
     showToast(`✅ Dashboard ready! ${analysis.metricColumn} by ${analysis.dimensionColumn}`, 'success');
-    
+
     trackEvent({
       eventType: 'analysis_complete',
       metric: analysis.metricColumn,
@@ -401,9 +401,9 @@ export default function InsightStudio() {
 
   const filteredChartData = useMemo(() => {
     if (!result) return [];
-    
+
     return result.chartData
-      .filter(p => p.value > 0 && 
+      .filter(p => p.value > 0 &&
         (categoryFilter ? p.category.toLowerCase().includes(categoryFilter.toLowerCase()) : true))
       .sort((a, b) => sortDirection === 'desc' ? b.value - a.value : a.value - b.value)
       .slice(0, topN);
@@ -419,9 +419,9 @@ export default function InsightStudio() {
     if (!result) return;
     const csv = [
       [result.dimensionColumn, result.metricColumn, 'Share %'],
-      ...result.chartData.map(d => [d.category, d.value, (d.value/result.totalMetric*100).toFixed(2)])
+      ...result.chartData.map(d => [d.category, d.value, (d.value / result.totalMetric * 100).toFixed(2)])
     ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-    
+
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -434,7 +434,7 @@ export default function InsightStudio() {
 
   const exportPDF = () => {
     if (!chartRef.current) return;
-    
+
     const canvas = chartRef.current.querySelector('canvas');
     if (canvas) {
       const link = document.createElement('a');
@@ -444,6 +444,11 @@ export default function InsightStudio() {
       showToast('📈 Chart exported as PNG', 'success');
     }
   };
+
+  const newpage=()=>{
+    window.open('/insights','_blank');
+  };
+
 
   const renderChart = () => {
     if (filteredChartData.length === 0) {
@@ -471,34 +476,34 @@ export default function InsightStudio() {
           <BarChart {...commonProps}>
             <defs>
               <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9}/>
-                <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.7}/>
+                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.7} />
               </linearGradient>
               <pattern id="barPattern" width="4" height="4" patternUnits="userSpaceOnUse">
-                <rect width="2" height="2" fill="#3b82f6"/>
+                <rect width="2" height="2" fill="#000000ff" />
               </pattern>
             </defs>
             <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
-            <XAxis dataKey="category" tick={{fontSize: 11, fill: '#9ca3af'}} interval={0} angle={-45} textAnchor="end" height={60}/>
-            <YAxis tick={{fontSize: 11, fill: '#9ca3af'}} />
-            <Tooltip formatter={tooltipFormatter} cursor={{fill: 'rgba(59,130,246,0.08)'}} />
+            <XAxis dataKey="category" tick={{ fontSize: 11, fill: '#9ca3af' }} interval={0} angle={-45} textAnchor="end" height={60} />
+            <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} />
+            <Tooltip formatter={tooltipFormatter} cursor={{ fill: 'rgba(59,130,246,0.08)' }} />
             <ReferenceLine y={result?.benchmark.avg || 0} label="Avg" stroke="rgba(16,185,129,0.6)" strokeDasharray="3 3" />
-            <Bar dataKey="value" fill="url(#barGradient)" radius={[6,6,0,0]}>
+            <Bar dataKey="value" fill="url(#barGradient)" radius={[6, 6, 0, 0]}>
               {filteredChartData.map((entry, index) => (
                 <Cell key={`bar-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Bar>
           </BarChart>
         );
-      
+
       case 'line':
         return (
           <LineChart {...commonProps}>
             <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
-            <XAxis dataKey="category" tick={{fontSize: 11, fill: '#9ca3af'}} interval={0} angle={-45} height={60}/>
-            <YAxis tick={{fontSize: 11, fill: '#9ca3af'}} />
+            <XAxis dataKey="category" tick={{ fontSize: 11, fill: '#9ca3af' }} interval={0} angle={-45} height={60} />
+            <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} />
             <Tooltip formatter={tooltipFormatter} />
-            <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} dot={{fill: '#10b981', strokeWidth: 2}} />
+            <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} dot={{ fill: '#10b981', strokeWidth: 2 }} />
           </LineChart>
         );
 
@@ -507,13 +512,13 @@ export default function InsightStudio() {
           <AreaChart {...commonProps}>
             <defs>
               <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.1}/>
+                <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.1} />
               </linearGradient>
             </defs>
             <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
-            <XAxis dataKey="category" tick={{fontSize: 11, fill: '#9ca3af'}} interval={0} angle={-45} height={60}/>
-            <YAxis tick={{fontSize: 11, fill: '#9ca3af'}} />
+            <XAxis dataKey="category" tick={{ fontSize: 11, fill: '#9ca3af' }} interval={0} angle={-45} height={60} />
+            <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} />
             <Tooltip formatter={tooltipFormatter} />
             <Area type="monotone" dataKey="value" stroke="#8b5cf6" fill="url(#areaGradient)" />
           </AreaChart>
@@ -549,19 +554,19 @@ export default function InsightStudio() {
   const sortedTableData = useMemo(() => {
     if (!result) return [];
     return [...result.chartData].sort((a, b) => {
-      let aVal = tableSortBy === 'category' ? a.category : 
-                tableSortBy === 'share' ? (a.value/result!.totalMetric*100) : a.value;
-      let bVal = tableSortBy === 'category' ? b.category : 
-                tableSortBy === 'share' ? (b.value/result!.totalMetric*100) : b.value;
-      
+      let aVal = tableSortBy === 'category' ? a.category :
+        tableSortBy === 'share' ? (a.value / result!.totalMetric * 100) : a.value;
+      let bVal = tableSortBy === 'category' ? b.category :
+        tableSortBy === 'share' ? (b.value / result!.totalMetric * 100) : b.value;
+
       if (tableSortBy === 'category') {
-        return tableSortDir === 'asc' ? 
-          a.category.localeCompare(b.category) : 
+        return tableSortDir === 'asc' ?
+          a.category.localeCompare(b.category) :
           b.category.localeCompare(a.category);
       }
-      
-      return tableSortDir === 'asc' ? 
-        (aVal as number) - (bVal as number) : 
+
+      return tableSortDir === 'asc' ?
+        (aVal as number) - (bVal as number) :
         (bVal as number) - (aVal as number);
     });
   }, [result, tableSortBy, tableSortDir]);
@@ -583,7 +588,7 @@ export default function InsightStudio() {
         }
         .float { animation: float 6s ease-in-out infinite; }
       `}</style>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-24">
         {/* Animated Background Elements */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -602,7 +607,7 @@ export default function InsightStudio() {
                 <span className="text-xs font-semibold text-blue-100 uppercase tracking-wide">AI Data Studio Pro</span>
                 <div className="ml-auto w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
               </div>
-              
+
               <div>
                 <h1 className="text-5xl lg:text-6xl font-black bg-gradient-to-r from-white via-blue-100 to-emerald-200 bg-clip-text text-transparent leading-tight">
                   Transform
@@ -612,7 +617,7 @@ export default function InsightStudio() {
                   Into Actionable Insights
                 </h1>
                 <p className="text-xl text-slate-300 mt-6 max-w-lg leading-relaxed">
-                  Upload any CSV. Ask in plain English. Get instant interactive dashboards, 
+                  Upload any CSV. Ask in plain English. Get instant interactive dashboards,
                   AI-powered analysis, and executive-ready reports. No code required.
                 </p>
               </div>
@@ -633,22 +638,20 @@ export default function InsightStudio() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => {setUseSample(true); setFile(null);}}
-                    className={`px-6 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                      useSample 
-                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40' 
+                    onClick={() => { setUseSample(true); setFile(null); }}
+                    className={`px-6 py-2.5 rounded-xl text-xs font-semibold transition-all ${useSample
+                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40'
                         : 'bg-white/5 border border-white/20 text-slate-300 hover:border-white/40 hover:bg-white/10'
-                    }`}
+                      }`}
                   >
                     Demo Dataset
                   </button>
                   <button
                     onClick={() => setUseSample(false)}
-                    className={`px-6 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                      !useSample 
-                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40' 
+                    className={`px-6 py-2.5 rounded-xl text-xs font-semibold transition-all ${!useSample
+                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40'
                         : 'bg-white/5 border border-white/20 text-slate-300 hover:border-white/40 hover:bg-white/10'
-                    }`}
+                      }`}
                   >
                     Upload CSV
                   </button>
@@ -658,10 +661,10 @@ export default function InsightStudio() {
               {/* File Upload */}
               {!useSample && (
                 <label className="group relative block">
-                  <input 
-                    type="file" 
-                    accept=".csv,.tsv" 
-                    onChange={handleFileChange} 
+                  <input
+                    type="file"
+                    accept=".csv,.tsv"
+                    onChange={handleFileChange}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   />
                   <div className="rounded-2xl border-2 border-dashed border-white/20 bg-gradient-to-br from-slate-900/50 to-slate-800/50 p-8 text-center hover:border-blue-400/60 hover:bg-blue-500/5 transition-all duration-300 group-hover:scale-[1.02]">
@@ -737,19 +740,19 @@ export default function InsightStudio() {
                     </>
                   )}
                 </button>
-                
+
                 <button
                   onClick={() => setAutoRefresh(!autoRefresh)}
-                  className={`p-3 rounded-2xl border-2 transition-all ${
-                    autoRefresh 
-                      ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 shadow-emerald-500/20' 
+                  className={`p-3 rounded-2xl border-2 transition-all ${autoRefresh
+                      ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 shadow-emerald-500/20'
                       : 'border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-slate-300'
-                  }`}
+                    }`}
                   title="Auto-refresh every 30s"
                 >
                   <RefreshCw className={`w-4 h-4 ${autoRefresh ? 'animate-spin' : ''}`} />
                 </button>
               </div>
+              <button onClick={newpage} className='w-full mx-auto flex-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 hover:from-blue-600 hover:via-cyan-600 hover:to-emerald-600 text-white font-bold py-4 px-6 rounded-2xl shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transform hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-3 text-lg'>Insights</button>
             </div>
           </div>
 
@@ -773,8 +776,8 @@ export default function InsightStudio() {
                       <button onClick={exportCSV} className="p-2 hover:bg-white/10 rounded-xl transition-all group">
                         <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
                       </button>
-                      <button 
-                        onClick={exportPDF} 
+                      <button
+                        onClick={exportPDF}
                         className="p-2 hover:bg-white/10 rounded-xl transition-all group"
                         title="Export chart"
                       >
@@ -784,7 +787,7 @@ export default function InsightStudio() {
                   )}
                 </div>
               </div>
-              
+
               {result && (
                 <div className="grid grid-cols-3 gap-4 text-xs mb-6">
                   <div className="rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 p-4">
@@ -839,8 +842,8 @@ export default function InsightStudio() {
                       </div>
                       <span>{result.metricColumn} by {result.dimensionColumn}</span>
                     </div>
-                    
-                    <div className="flex flex-wrap items-center gap-2">
+
+                    <div className="flex  flex-wrap items-center gap-2">
                       {/* Chart Type */}
                       <div className="flex bg-slate-800/50 backdrop-blur-sm rounded-2xl p-1 border border-white/20 shadow-lg">
                         {(['bar', 'line', 'area', 'pie'] as const).map((type) => {
@@ -849,11 +852,10 @@ export default function InsightStudio() {
                             <button
                               key={type}
                               onClick={() => setChartType(type)}
-                              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                                chartType === type
-                                  ? 'bg-gradient-to-r from-blue-500 to-emerald-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40' 
+                              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${chartType === type
+                                  ? 'bg-gradient-to-r from-blue-500 to-emerald-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40'
                                   : 'text-slate-300 hover:text-white hover:bg-white/10'
-                              }`}
+                                }`}
                             >
                               <Icon className="w-3 h-3" />
                               {type}
@@ -878,20 +880,20 @@ export default function InsightStudio() {
                           onChange={(e) => setTopN(Number(e.target.value))}
                           className="py-2 px-3 text-xs bg-transparent text-white border-none focus:outline-none rounded-xl"
                         >
-                          {[8, 12, 16, 24].map(n => <option key={n}>Top {n}</option>)}
+                          {[8, 12, 16, 24].map(n => <option className='text-black' key={n}>Top {n}</option>)}
                         </select>
                         <button
                           onClick={() => setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc')}
                           className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-white/10 transition-all"
                         >
-                          <ArrowUpDown className="w-4 h-4" />
+                          <ArrowUpDown className="w-4  h-4" />
                         </button>
                       </div>
                     </div>
                   </div>
 
                   {/* Chart Container */}
-                  <div className="flex-1 w-full min-h-0">
+                  <div className="flex-1 text-black w-full min-h-0">
                     <ResponsiveContainer width="100%" height="100%">
                       {renderChart()}
                     </ResponsiveContainer>
@@ -909,17 +911,17 @@ export default function InsightStudio() {
                       <TrendingUp className="w-4 h-4" />
                       <span className="text-xs font-semibold uppercase tracking-wide">Top Performer</span>
                     </div>
-                    <p className="text-2xl font-black text-white">{result.topCategories[0]?.value?.toLocaleString()}</p>
+                    <p className="text-ms font-black text-white">{result.topCategories[0]?.value?.toLocaleString()}</p>
                     <p className="text-xs text-slate-400">{result.topCategories[0]?.category}</p>
                   </div>
-                  
+
                   <div className="group p-4 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/50 backdrop-blur-xl hover:border-emerald-500/40 transition-all hover:shadow-emerald-500/10">
                     <div className="flex items-center gap-2 text-blue-400 mb-2">
                       <DollarSign className="w-4 h-4" />
                       <span className="text-xs font-semibold uppercase tracking-wide">Avg {result.metricColumn}</span>
                     </div>
-                    <p className="text-2xl font-black text-white">{result.benchmark.avg.toLocaleString()}</p>
-                    <p className="text-xs text-slate-400">Benchmark</p>
+                    <p className="text-ms font-black text-white">{result.benchmark.avg.toLocaleString()}</p>
+                    <p className="text-xs text-slate-400 ">Benchmark</p>
                   </div>
 
                   <div className="group p-4 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-800/50 backdrop-blur-xl hover:border-purple-500/40 transition-all hover:shadow-purple-500/10">
@@ -977,14 +979,14 @@ export default function InsightStudio() {
                     </div>
                     <div className="space-y-2">
                       {result.topCategories.slice(0, 6).map((cat) => (
-                        <div key={cat.category} className="flex items-center justify-between group p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/10">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                        <div key={cat.category} className="flex items-center flex w-full justify-between group px-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/10">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div className="w-8 h-8  bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg">
                               #{cat.rank}
                             </div>
                             <span className="font-semibold text-white min-w-0 truncate">{cat.category}</span>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right ">
                             <p className="font-mono font-bold text-emerald-400 text-lg">{cat.value.toLocaleString()}</p>
                             <p className="text-xs text-emerald-300">{cat.share.toFixed(1)}%</p>
                           </div>
@@ -1003,7 +1005,7 @@ export default function InsightStudio() {
                     </div>
                     <span className="text-xs text-slate-500">{sortedTableData.length} rows • {result.metricColumn} by {result.dimensionColumn}</span>
                   </div>
-                  
+
                   <div className="max-h-40 overflow-auto rounded-2xl border border-white/5 bg-slate-900/30">
                     <table className="w-full text-xs">
                       <thead className="sticky top-0 bg-slate-900/90 backdrop-blur-sm">
@@ -1045,7 +1047,7 @@ export default function InsightStudio() {
                               {row.value.toLocaleString()}
                             </td>
                             <td className="px-4 py-3 text-right font-mono text-blue-400">
-                              {((row.value/result!.totalMetric)*100).toFixed(1)}%
+                              {((row.value / result!.totalMetric) * 100).toFixed(1)}%
                             </td>
                           </tr>
                         ))}
@@ -1059,15 +1061,15 @@ export default function InsightStudio() {
         </div>
       </div>
 
+
       {/* Toast */}
       {toast && (
-        <div className={`fixed bottom-8 right-8 z-50 rounded-2xl px-6 py-4 shadow-2xl border backdrop-blur-xl text-sm font-semibold transform transition-all scale-100 ${
-          toast.tone === 'error' 
-            ? 'bg-red-600/20 border-red-500/40 shadow-red-500/25 text-red-100 animate-bounce' 
+        <div className={`fixed bottom-8 right-8 z-50 rounded-2xl px-6 py-4 shadow-2xl border backdrop-blur-xl text-sm font-semibold transform transition-all scale-100 ${toast.tone === 'error'
+            ? 'bg-red-600/20 border-red-500/40 shadow-red-500/25 text-red-100 animate-bounce'
             : toast.tone === 'success'
-            ? 'bg-emerald-600/20 border-emerald-500/40 shadow-emerald-500/25 text-emerald-100'
-            : 'bg-blue-600/20 border-blue-500/40 shadow-blue-500/25 text-blue-100'
-        }`}>
+              ? 'bg-emerald-600/20 border-emerald-500/40 shadow-emerald-500/25 text-emerald-100'
+              : 'bg-blue-600/20 border-blue-500/40 shadow-blue-500/25 text-blue-100'
+          }`}>
           {toast.message}
         </div>
       )}
