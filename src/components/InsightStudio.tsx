@@ -445,10 +445,6 @@ export default function InsightStudio() {
     }
   };
 
-  const newpage=()=>{
-    window.open('/insights','_blank');
-  };
-
 
   const renderChart = () => {
     if (filteredChartData.length === 0) {
@@ -752,7 +748,6 @@ export default function InsightStudio() {
                   <RefreshCw className={`w-4 h-4 ${autoRefresh ? 'animate-spin' : ''}`} />
                 </button>
               </div>
-              <button onClick={newpage} className='w-full mx-auto flex-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 hover:from-blue-600 hover:via-cyan-600 hover:to-emerald-600 text-white font-bold py-4 px-6 rounded-2xl shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transform hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-3 text-lg'>Insights</button>
             </div>
           </div>
 

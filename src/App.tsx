@@ -1,8 +1,13 @@
 import { useEffect } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+
 import ContactPage from "./pages/contact";
 import AboutPage from "./pages/about";
+import Signup from "./pages/auth/Signup";
+import Login from "./pages/auth/Login";
+import ProtectedRoute from "./pages/auth/ProtectedRoute.tsx";
+import RedirectIfLoggedIn from "./pages/auth/RedirectIfLoggedIn";
 
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -12,30 +17,26 @@ import BlogDetail from './components/BlogDetail';
 import InsightStudio from './components/InsightStudio';
 import Analytics from './components/Analytics';
 import Footer from './components/Footer';
-import Insights from './components/Insights.tsx';
 
-// ⭐ NEW IMPORT: Admin Dashboard
 import AdminDashboard from "./admin/AdminDashboard";
 
-// ⭐ Track page visits on every route
 function TrackPageVisit() {
-  const location = useLocation(); // detects route change
+  const location = useLocation();
 
   useEffect(() => {
     const logVisit = async () => {
       await supabase.from("user_analytics").insert([
         {
           user_id: "guest",
-          page_visited: location.pathname,   // tracks current route
+          page_visited: location.pathname,
           event_type: "visit",
           event_detail: "",
           device: navigator.userAgent
         }
       ]);
     };
-
     logVisit();
-  }, [location.pathname]); // runs every time the URL changes
+  }, [location.pathname]);
 
   return null;
 }
@@ -43,13 +44,13 @@ function TrackPageVisit() {
 function App() {
   return (
     <Router>
-      {/* Tracks visits for every page */}
       <TrackPageVisit />
 
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
         <Navbar />
 
         <Routes>
+          {/* Public Landing Page */}
           <Route path="/" element={
             <>
               <Hero />
@@ -58,15 +59,57 @@ function App() {
             </>
           } />
 
-          <Route path="/app" element={<InsightStudio />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/blog/:slug" element={<BlogDetail />} />
-
-          {/* ⭐ NEW ADMIN ROUTE */}
-          <Route path="/admin" element={<AdminDashboard />} />
+          {/* Public Pages */}
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/insights" element={<Insights/>} />
+          <Route path="/blog/:slug" element={<BlogDetail />} />
+
+          {/* Auth Pages — Wrapped with RedirectIfLoggedIn */}
+          <Route
+            path="/signup"
+            element={
+              <RedirectIfLoggedIn>
+                <Signup />
+              </RedirectIfLoggedIn>
+            }
+          />
+
+          <Route
+            path="/login"
+            element={
+              <RedirectIfLoggedIn>
+                <Login />
+              </RedirectIfLoggedIn>
+            }
+          />
+
+          <Route
+            path="/app"
+            element={
+              <ProtectedRoute>
+                <InsightStudio />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <Analytics />
+              </ProtectedRoute>
+            }
+          />
+
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
 
         <Footer />

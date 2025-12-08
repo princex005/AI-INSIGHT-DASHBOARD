@@ -3,6 +3,7 @@ import { ArrowRight, Play, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 
+
 // 🔵 Universal event tracking function (simple + works with your table)
 async function logEvent({
   eventType,
@@ -63,37 +64,7 @@ export default function Hero() {
     });
   };
 
-  // 🔵 Track trial form submitted
-  const handleTrialSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!email.trim()) {
-      setErrorMessage('Please enter a valid email address.');
-      return;
-    }
 
-    setIsSubmitting(true);
-    setErrorMessage(null);
-
-    try {
-      const cleanEmail = email.trim();
-      window.localStorage.setItem("insightai_trial_email", cleanEmail);
-
-      logEvent({
-        eventType: 'trial_started',
-        page: '/',
-        email: cleanEmail,
-        metadata: { source: 'hero' }
-      });
-
-      setShowTrialModal(false);
-      navigate('/app');
-    } catch (err) {
-      console.error('Error starting free trial:', err);
-      setErrorMessage('Something went wrong while starting your trial. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
@@ -236,7 +207,7 @@ export default function Hero() {
               Enter your email and we'll send you a secure magic link to access your InsightAI trial.
             </p>
 
-            <form onSubmit={handleTrialSubmit} className="space-y-4">
+            <form onClick={()=>{navigate("/signup")}} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2" htmlFor="trial-email">
                   Work email
