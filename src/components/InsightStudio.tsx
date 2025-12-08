@@ -852,7 +852,7 @@ export default function InsightStudio() {
                                   : 'text-slate-300 hover:text-white hover:bg-white/10'
                                 }`}
                             >
-                              <Icon className="w-3 h-3" />
+                              <Icon className="w-3 h-3 " />
                               {type}
                             </button>
                           );
